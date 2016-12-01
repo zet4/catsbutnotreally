@@ -1,15 +1,11 @@
 package ibsearch
 
 import (
-	"strings"
 	"time"
 
 	"net/http"
 
 	"encoding/json"
-
-	"bytes"
-	"io/ioutil"
 
 	"fmt"
 
@@ -18,35 +14,38 @@ import (
 	"github.com/zet4/catsbutnotreally/services"
 )
 
+// Config Config from source's optional arguments
 type Config struct {
 	Query string `json:"query"`
 	Key   string `json:"key"`
 }
 
+// Image Image from ibsearch api
 type Image struct {
 	Server string `json:"server"`
 	Path   string `json:"path"`
+	Tags   string `json:"tags"`
+	ID     string `json:"id"`
 }
 
 func (img *Image) String() string {
 	return fmt.Sprintf("https://%s.ibsear.ch/%s", img.Server, img.Path)
 }
 
-func init() {
-	services.Index["ibsearch"] = func(arguments json.RawMessage) (filename string, file *bytes.Reader, err error) {
+var (
+	client *http.Client
+)
+
+func getIbsearch(host string) func(arguments json.RawMessage) (image string, customfields services.CustomFields, err error) {
+	return func(arguments json.RawMessage) (image string, customfields services.CustomFields, err error) {
 		var config Config
 		if err := json.Unmarshal([]byte(arguments), &config); err != nil {
 			return "", nil, err
 		}
 
-		timeout := time.Duration(60 * time.Second)
-		client := http.Client{
-			Timeout: timeout,
-		}
-
-		req, err := http.NewRequest("GET", fmt.Sprintf("https://ibsear.ch/api/v1/images.json?q=%s", config.Query), nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/api/v1/images.json?q=%s", host, config.Query), nil)
 		req.Header.Set("X-IbSearch-Key", config.Key)
-		req.Header.Set("User-Agent", fmt.Sprintf("Discord Image Webhook Bot (https://github.com/zet4/catsbutnotreally, v%s)", "0.1"))
+		req.Header.Set("User-Agent", fmt.Sprintf("Discord Image Webhook Bot (https://github.com/zet4/catsbutnotreally, v%s)", "0.2"))
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -67,25 +66,21 @@ func init() {
 			return "", nil, fmt.Errorf("Result array of images for '%s' is empty", config.Query)
 		}
 
-		resp, err = client.Get(images[rand.Intn(len(images))].String())
-		if err != nil {
-			return
-		}
+		imageObj := images[rand.Intn(len(images))]
 
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return
-		}
+		fields := make(services.CustomFields)
+		fields[fmt.Sprintf("Source: https://ibsear.ch/images/%s", imageObj.ID)] = fmt.Sprintf("Tags: %s", imageObj.Tags)
 
-		tokens := strings.Split(resp.Request.URL.String(), "/")
-
-		if err = resp.Body.Close(); err != nil {
-			return
-		}
-
-		filename = tokens[len(tokens)-1]
-		file = bytes.NewReader(data)
-
-		return
+		return imageObj.String(), fields, nil
 	}
+}
+
+func init() {
+	timeout := time.Duration(20 * time.Second)
+	client = &http.Client{
+		Timeout: timeout,
+	}
+
+	services.Index["ibsearch"] = getIbsearch("ibsear.ch")
+	services.Index["ibsearchxxx"] = getIbsearch("ibsearch.xxx")
 }

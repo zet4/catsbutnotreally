@@ -1,21 +1,17 @@
 package randomcat
 
 import (
-	"strings"
 	"time"
 
 	"net/http"
 
 	"encoding/json"
 
-	"bytes"
-	"io/ioutil"
-
 	"github.com/zet4/catsbutnotreally/services"
 )
 
 func init() {
-	services.Index["randomcat"] = func(arguments json.RawMessage) (filename string, file *bytes.Reader, err error) {
+	services.Index["randomcat"] = func(arguments json.RawMessage) (image string, customfields services.CustomFields, err error) {
 		timeout := time.Duration(60 * time.Second)
 		client := http.Client{
 			Timeout: timeout,
@@ -38,26 +34,8 @@ func init() {
 		if err != nil {
 			return
 		}
+		fields := make(services.CustomFields)
 
-		resp, err = client.Get(msg.File)
-		if err != nil {
-			return
-		}
-
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return
-		}
-
-		tokens := strings.Split(resp.Request.URL.String(), "/")
-
-		if err = resp.Body.Close(); err != nil {
-			return
-		}
-
-		filename = tokens[len(tokens)-1]
-		file = bytes.NewReader(data)
-
-		return
+		return msg.File, fields, nil
 	}
 }

@@ -18,6 +18,7 @@ type Destination struct {
 type Source struct {
 	Service string `json:"service"`
 	Chance  int    `json:"chance"`
+	Display string `json:"display"`
 
 	OptionalArguments json.RawMessage `json:"arguments"`
 }
