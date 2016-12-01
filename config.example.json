@@ -1,0 +1,26 @@
+{
+    "destinations": [
+        {
+            "username": "Catgirls are sexy",
+            "avatar": "https://b.catgirlsare.sexy/xik9.png",
+            "webhook": "your discord webhook url goes here",
+            "cron": "0/5 * * * * *",
+            "sources": [
+                {
+                    "service": "randomcat",
+                    "chance": 1
+                },
+                {
+                    "service": "ibsearch",
+                    "chance": 2,
+                    "arguments": {"query": "nekomimi rating:safe random: size:<2m>1m", "key": "ibsearch key goes here"}
+                },
+                {
+                    "service": "ibsearch",
+                    "chance": 2,
+                    "arguments": {"query": "fox_ears rating:safe random: size:<2m>1m", "key": "ibsearch key goes here"}
+                }
+            ] 
+        }
+    ]
+}
