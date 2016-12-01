@@ -13,6 +13,7 @@ type Displayable interface {
 	GetRequestData() (contenttype string, body interface{}, err error)
 }
 
+// Simple Represents a simple container that sends a multipart form data.
 type Simple struct {
 	Displayable
 
@@ -35,6 +36,7 @@ func addField(body *multipart.Writer, field, value string) (err error) {
 	return nil
 }
 
+//GetRequestData Simple's GetRequestData that sends multipart form data.
 func (s *Simple) GetRequestData() (contenttype string, body interface{}, err error) {
 	bodybuffer := &bytes.Buffer{}
 	bodywriter := multipart.NewWriter(bodybuffer)
@@ -68,7 +70,8 @@ func (s *Simple) GetRequestData() (contenttype string, body interface{}, err err
 	return bodywriter.FormDataContentType(), bytes.NewBuffer(bodybuffer.Bytes()), nil
 }
 
-type Embeded struct {
+// Embedded Represents container that when called upon sends json body.
+type Embedded struct {
 	Displayable
 
 	Username, Avatar, Content, Image string
@@ -89,7 +92,8 @@ type embed struct {
 	Fields []*field `json:"fields"`
 }
 
-func (e *Embeded) GetRequestData() (contenttype string, body interface{}, err error) {
+//GetRequestData Embedded's GetRequestData that sends json body.
+func (e *Embedded) GetRequestData() (contenttype string, body interface{}, err error) {
 	var message struct {
 		Username string   `json:"username"`
 		Avatar   string   `json:"avatar_url"`

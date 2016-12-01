@@ -20,6 +20,7 @@ Uploads images from `source`'s with interval defined by `cron`, each `source` ha
 
  * Hot reload of config.
  * Opt-in `embed` mode for `display` (default's to `simple`).
+ * MIT License added
 
 ### v0.1
 

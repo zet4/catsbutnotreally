@@ -56,6 +56,7 @@ func loadConfig(path string, fail bool) bool {
 	return true
 }
 
+// WatchConfig Adds `path` to watchr and returns a reload channel that application should use to handle config reload.
 func WatchConfig(path string) chan bool {
 	if watchr != nil {
 		log.Fatalln("Already watching.")

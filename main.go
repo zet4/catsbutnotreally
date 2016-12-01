@@ -59,7 +59,7 @@ func createMessage(username, avatar, service, image, display string, fields *ser
 			Filename: tokens[len(tokens)-1],
 		}, nil
 	} else if display == "embed" {
-		return &services.Embeded{
+		return &services.Embedded{
 			Username: username,
 			Avatar:   avatar,
 			Image:    image,
