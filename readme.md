@@ -2,12 +2,12 @@
 
 Uploads images from `source`'s with interval defined by `cron`, each `source` has a `chance` which determines it's chance to be chosen for next run.
 
-## Currently supported
+## Currently supported services
 
- * ibsearch 
- * * Requires `key` and `query` as `arguments` field in `source` definition.
- * randomcat
- * * No special `arguments`.
+- ibsearch / ibsearchxxx
+    - Requires `key` and `query` as `arguments` field in `source` definition.
+- randomcat
+    - No special `arguments`.
 
 ## How to use
 
@@ -18,19 +18,18 @@ Uploads images from `source`'s with interval defined by `cron`, each `source` ha
 
 ### v0.3
 
-* Adds -config argument for specifying a different config file.
-* Adds statistics (image sent counter) and golang stats.
-* Adds pprof.
-* Adds `enable_statistics`, `enable_pprof` and `web_address` to root config.
-* Web UI in ELM.
-* Hot reload of the web server.
+- Adds -config argument for specifying a different config file.
+- Adds statistics (image sent counter) and golang stats.
+- Adds pprof.
+- Adds `enable_statistics`, `enable_pprof` and `web_address` to root config.
+- Hot reload of the web server.
 
 ### v0.2
 
- * Hot reload of config.
- * Opt-in `embed` mode for `display` (default's to `simple`).
- * MIT License added
+- Hot reload of config.
+- Opt-in `embed` mode for `display` (default's to `simple`).
+- MIT License added
 
 ### v0.1
 
- * Initial release.
+- Initial release.
