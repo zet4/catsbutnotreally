@@ -77,11 +77,12 @@ func WatchConfig(path string) chan bool {
 			select {
 			case event := <-watchr.Events:
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("Config file change has been detected... trying new config...", event.Name)
+					log.Println("Config file change has been detected, attempting to parse new config.")
 					ok := loadConfig(path, false)
 					if !ok {
 						log.Println("New config encountered error, continuing with old one.")
 					} else {
+						log.Println("New config is valid, reloading.")
 						reloadChan <- true
 					}
 				}

@@ -1,4 +1,6 @@
 {
+    "web_address": ":9002",
+    "enable_statistics": true,
     "destinations": [
         {
             "username": "Catgirls are sexy",
@@ -8,7 +10,8 @@
             "sources": [
                 {
                     "service": "randomcat",
-                    "chance": 1
+                    "chance": 1,
+                    "display": "embed"
                 },
                 {
                     "service": "ibsearch",

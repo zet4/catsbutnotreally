@@ -1,15 +1,12 @@
 package ibsearch
 
 import (
-	"time"
-
-	"net/http"
-
 	"encoding/json"
-
 	"fmt"
-
 	"math/rand"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/zet4/catsbutnotreally/services"
 )
@@ -36,42 +33,79 @@ var (
 	client *http.Client
 )
 
-func getIbsearch(host string) func(arguments json.RawMessage) (image string, customfields services.CustomFields, err error) {
-	return func(arguments json.RawMessage) (image string, customfields services.CustomFields, err error) {
+func escapeTags(tags string) string {
+	return strings.Replace(tags, "_", "\\_", -1)
+}
+
+func boldenMatches(tags string, query []string) string {
+	temp := tags
+	for _, tag := range query {
+		if strings.Contains(tags, tag) {
+			temp = strings.Replace(temp, tag, fmt.Sprintf("**%s**", tag), 1)
+		}
+	}
+	return temp
+}
+
+func parseQuery(query string) (result []string) {
+	for _, s := range strings.Fields(query) {
+		// Ignore - tags
+		if strings.HasPrefix(s, "-") {
+			continue
+		}
+
+		// Ignore random and size meta tags.
+		if strings.HasPrefix(s, "random") || strings.HasPrefix(s, "size") {
+			continue
+		}
+
+		parsed := strings.Trim(s, "()|")
+		if len(parsed) > 0 {
+			result = append(result, parsed)
+		}
+	}
+	return
+}
+
+func getIbsearch(host string) func(arguments json.RawMessage) func() (image string, customfields services.CustomFields, err error) {
+	return func(arguments json.RawMessage) func() (image string, customfields services.CustomFields, err error) {
 		var config Config
 		if err := json.Unmarshal([]byte(arguments), &config); err != nil {
-			return "", nil, err
+			return func() (string, services.CustomFields, error) { return "", nil, err }
 		}
+		parsedQuery := parseQuery(config.Query)
 
-		req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/api/v1/images.json?q=%s", host, config.Query), nil)
-		req.Header.Set("X-IbSearch-Key", config.Key)
-		req.Header.Set("User-Agent", fmt.Sprintf("Discord Image Webhook Bot (https://github.com/zet4/catsbutnotreally, v%s)", "0.2"))
+		return func() (image string, customfields services.CustomFields, err error) {
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/api/v1/images.json?q=%s", host, config.Query), nil)
+			req.Header.Set("X-IbSearch-Key", config.Key)
+			req.Header.Set("User-Agent", fmt.Sprintf("Discord Image Webhook Bot (https://github.com/zet4/catsbutnotreally, v%s)", "0.2"))
 
-		resp, err := client.Do(req)
-		if err != nil {
-			return
+			resp, err := client.Do(req)
+			if err != nil {
+				return
+			}
+
+			var images []Image
+
+			if err = json.NewDecoder(resp.Body).Decode(&images); err != nil {
+				return
+			}
+
+			if err = resp.Body.Close(); err != nil {
+				return
+			}
+
+			if len(images) == 0 {
+				return "", nil, fmt.Errorf("Result array of images for '%s' is empty", config.Query)
+			}
+
+			imageObj := images[rand.Intn(len(images))]
+
+			fields := make(services.CustomFields)
+			fields[fmt.Sprintf("Source: https://%s/images/%s", host, imageObj.ID)] = fmt.Sprintf("Tags: %s", escapeTags(boldenMatches(imageObj.Tags, parsedQuery)))
+
+			return imageObj.String(), fields, nil
 		}
-
-		var images []Image
-
-		if err = json.NewDecoder(resp.Body).Decode(&images); err != nil {
-			return
-		}
-
-		if err = resp.Body.Close(); err != nil {
-			return
-		}
-
-		if len(images) == 0 {
-			return "", nil, fmt.Errorf("Result array of images for '%s' is empty", config.Query)
-		}
-
-		imageObj := images[rand.Intn(len(images))]
-
-		fields := make(services.CustomFields)
-		fields[fmt.Sprintf("Source: https://ibsear.ch/images/%s", imageObj.ID)] = fmt.Sprintf("Tags: %s", imageObj.Tags)
-
-		return imageObj.String(), fields, nil
 	}
 }
 

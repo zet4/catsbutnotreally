@@ -16,6 +16,15 @@ Uploads images from `source`'s with interval defined by `cron`, each `source` ha
 
 ## Changes
 
+### v0.3
+
+* Adds -config argument for specifying a different config file.
+* Adds statistics (image sent counter) and golang stats.
+* Adds pprof.
+* Adds `enable_statistics`, `enable_pprof` and `web_address` to root config.
+* Web UI in ELM.
+* Hot reload of the web server.
+
 ### v0.2
 
  * Hot reload of config.
