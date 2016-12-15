@@ -48,7 +48,7 @@ func flags() {
 
 func main() {
 	flags()
-	reloadChan := WatchConfig(configFile)
+	reloadChan, reloadedChan := WatchConfig(configFile)
 
 	go func() {
 		var err error
@@ -70,10 +70,12 @@ func main() {
 			}
 			runner.Start()
 			webapp = WebAppFromConfig(config)
+			reloadedChan <- struct{}{}
 		}
 	}()
 
-	reloadChan <- true
+	reloadChan <- struct{}{}
+	<-reloadedChan
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

@@ -7,6 +7,8 @@ import (
 
 	"sync"
 
+	"time"
+
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -57,7 +59,7 @@ func loadConfig(path string, fail bool) bool {
 }
 
 // WatchConfig Adds `path` to watchr and returns a reload channel that application should use to handle config reload.
-func WatchConfig(path string) chan bool {
+func WatchConfig(path string) (chan struct{}, chan struct{}) {
 	if watchr != nil {
 		log.Fatalln("Already watching.")
 	}
@@ -70,22 +72,36 @@ func WatchConfig(path string) chan bool {
 
 	loadConfig(path, true)
 
-	reloadChan := make(chan bool)
+	reloadChan := make(chan struct{})
+	reloadedChan := make(chan struct{})
+	isWorking := false
 
 	go func() {
 		for {
 			select {
 			case event := <-watchr.Events:
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("Config file change has been detected, attempting to parse new config.")
-					ok := loadConfig(path, false)
-					if !ok {
-						log.Println("New config encountered error, continuing with old one.")
-					} else {
-						log.Println("New config is valid, reloading.")
-						reloadChan <- true
-					}
+				if isWorking {
+					log.Println("Already in process of reloading, try again later.")
+					continue
 				}
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					isWorking = true
+					go func() {
+						log.Println("Config file change has been detected, attempting to parse new config.")
+						ok := loadConfig(path, false)
+						if !ok {
+							log.Println("New config encountered error, continuing with old one.")
+						} else {
+							log.Println("New config is valid, reloading.")
+							reloadChan <- struct{}{}
+							// Prevents double reloads, thanks fsnotify...
+							<-reloadedChan
+							time.Sleep(1 * time.Second)
+						}
+						isWorking = false
+					}()
+				}
+
 			case err := <-watchr.Errors:
 				log.Println("Error:", err)
 			}
@@ -97,5 +113,5 @@ func WatchConfig(path string) chan bool {
 		log.Fatalln("Failed to add config file to watcher", err)
 	}
 
-	return reloadChan
+	return reloadChan, reloadedChan
 }
