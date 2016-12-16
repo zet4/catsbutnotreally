@@ -1,0 +1,27 @@
+html {
+    height: 100%;
+}
+
+body {
+	color: white;
+	width: 95%;
+	height: 95%;
+	background-color: rgb(24, 20, 21);
+	background-size:     contain;
+    background-repeat:   no-repeat;
+    background-position: center center; 
+}
+
+h1 {
+	font-size: 6em;
+	font-family: monospace;
+	text-align: center;
+    left: 0;
+    line-height: 200px;
+    margin: auto;
+    margin-top: -100px;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+	text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 1px 1px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+}

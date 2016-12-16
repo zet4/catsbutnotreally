@@ -12,6 +12,7 @@ import (
 
 	"sync"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/zet4/catsbutnotreally/utils"
 )
 
@@ -131,6 +132,7 @@ func WebAppFromConfig(cfg *Config) *WebApp {
 			webapp.Stats = StatisticsFromConfig(config)
 			webapp.Broker = utils.NewBroker([]byte("stats"), func() []byte { b, _ := json.Marshal(webapp.Stats); return b })
 			mux.Handle("/events", webapp.Broker)
+			mux.Handle("/", http.FileServer(rice.MustFindBox("web").HTTPBox()))
 			mux.Handle("/go", http.HandlerFunc(utils.GoStatisticsHandler))
 		}
 		if config.EnablePPRof {
