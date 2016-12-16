@@ -14,7 +14,11 @@ Uploads images from `source`'s with interval defined by `cron`, each `source` ha
 `go get github.com/zet4/catsbutnotreally` it, copy `config.example.json` into a directory with the binary, rename it to `config.json` and fill in as required.
 
 
-## Changes
+## Change log
+
+### v0.4
+
+- Adds a staticly compiled basic web frontend.
 
 ### v0.3
 

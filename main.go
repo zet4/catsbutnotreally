@@ -26,7 +26,7 @@ import (
 
 const (
 	// VERSION Version of the project
-	VERSION = "0.3"
+	VERSION = "0.4"
 )
 
 var (
